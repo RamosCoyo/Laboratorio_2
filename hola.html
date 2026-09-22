@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Lista de Tareas</title>
+    <!-- Cargando Tailwind CSS para un diseño moderno y responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Cargando fuente Inter de Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Animación suave para cuando se agregan/eliminan tareas */
+        .task-item {
+            transition: all 0.3s ease;
+        }
+        .task-item:hover .delete-btn {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center p-4">
+
+    <!-- Contenedor principal de la aplicación (Tarjeta) -->
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+        
+        <!-- Cabecera de la aplicación -->
+        <div class="bg-indigo-600 p-6 text-white text-center">
+            <h1 class="text-2xl font-bold tracking-wide">Mis Tareas</h1>
+            <p class="text-indigo-200 text-sm mt-1" id="task-counter">0 tareas pendientes</p>
+        </div>
+
+        <!-- Área de entrada de datos -->
+        <div class="p-6 pb-2">
+            <form id="task-form" class="relative flex items-center">
+                <input 
+                    type="text" 
+                    id="task-input" 
+                    placeholder="¿Qué necesitas hacer hoy?" 
+                    class="w-full pl-4 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all shadow-sm text-gray-700"
+                    autocomplete="off"
+                >
+                <button 
+                    type="submit" 
+                    class="absolute right-2 p-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors flex items-center justify-center"
+                    aria-label="Agregar tarea"
+                >
+                    <!-- Icono de "Más" -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </form>
+            <!-- Mensaje de error oculto por defecto -->
+            <p id="error-msg" class="text-red-500 text-xs mt-2 hidden ml-2">Por favor, escribe una tarea antes de agregar.</p>
+        </div>
+
+        <!-- Contenedor de la lista (con scroll si hay muchas tareas) -->
+        <div class="p-6 overflow-y-auto flex-1 custom-scrollbar">
+            <ul id="task-list" class="space-y-3">
+                <!-- Las tareas se inyectarán aquí mediante JavaScript -->
+            </ul>
+            
+            <!-- Estado vacío (Se muestra cuando no hay tareas) -->
+            <div id="empty-state" class="text-center py-10 hidden">
+                <div class="text-gray-300 mb-3 flex justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                </div>
+                <p class="text-gray-500 font-medium">¡Todo al día!</p>
+                <p class="text-gray-400 text-sm">No tienes tareas pendientes.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables de estado
+        let tasks = [
+            { id: 1, text: "Comprar víveres para la semana", completed: false },
+            { id: 2, text: "Llamar al médico", completed: true },
+            { id: 3, text: "Revisar correos del trabajo", completed: false }
+        ];
+
+        // Elementos del DOM
+        const taskForm = document.getElementById('task-form');
+        const taskInput = document.getElementById('task-input');
+        const taskList = document.getElementById('task-list');
+        const emptyState = document.getElementById('empty-state');
+        const taskCounter = document.getElementById('task-counter');
+        const errorMsg = document.getElementById('error-msg');
+
+        // Función principal para renderizar las tareas en la interfaz
+        function renderTasks() {
+            // Limpiar la lista actual
+            taskList.innerHTML = '';
+            
+            // Contar tareas no completadas
+            const pendingTasks = tasks.filter(task => !task.completed).length;
+            taskCounter.textContent = `${pendingTasks} ${pendingTasks === 1 ? 'tarea pendiente' : 'tareas pendientes'}`;
+
+            // Mostrar u ocultar el estado vacío
+            if (tasks.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            // Crear y agregar cada elemento de la lista al DOM
+            tasks.forEach(task => {
+                const li = document.createElement('li');
+                // Estilos dinámicos basados en si la tarea está completada
+                const bgClass = task.completed ? 'bg-gray-50' : 'bg-white border-gray-100 hover:border-indigo-200';
+                const textClass = task.completed ? 'text-gray-400 line-through' : 'text-gray-700';
+                
+                li.className = `task-item group flex items-center justify-between p-4 border rounded-xl shadow-sm cursor-pointer ${bgClass}`;
+                
+                // HTML interno del elemento de la lista
+                li.innerHTML = `
+                    <div class="flex items-center flex-1" onclick="toggleTask(${task.id})">
+                        <!-- Círculo de checkbox interactivo -->
+                        <div class="w-6 h-6 rounded-full border-2 flex items-center justify-center mr-3 flex-shrink-0 transition-colors 
+                                   ${task.completed ? 'bg-green-500 border-green-500' : 'border-gray-300 group-hover:border-indigo-400'}">
+                            ${task.completed ? `<svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>` : ''}
+                        </div>
+                        <!-- Texto de la tarea -->
+                        <span class="font-medium ${textClass} break-all">${task.text}</span>
+                    </div>
+                    <!-- Botón de eliminar -->
+                    <button onclick="deleteTask(${task.id}, event)" class="delete-btn md:opacity-0 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all focus:outline-none focus:opacity-100" aria-label="Eliminar tarea">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                `;
+                
+                taskList.appendChild(li);
+            });
+        }
+
+        // Función para manejar el envío del formulario (Agregar tarea)
+        function addTask(e) {
+            e.preventDefault(); // Evitar que la página se recargue
+            
+            const text = taskInput.value.trim();
+            
+            // Validación de entrada vacía
+            if (text === '') {
+                errorMsg.classList.remove('hidden');
+                taskInput.classList.add('border-red-400', 'focus:ring-red-500');
+                return;
+            }
+
+            // Ocultar mensaje de error si existía
+            errorMsg.classList.add('hidden');
+            taskInput.classList.remove('border-red-400', 'focus:ring-red-500');
+
+            // Crear el nuevo objeto de tarea
+            const newTask = {
+                id: Date.now(), // Uso de timestamp para ID único
+                text: text,
+                completed: false
+            };
+
+            // Agregar al inicio del arreglo de tareas
+            tasks.unshift(newTask);
+            
+            // Limpiar el input y volver a renderizar
+            taskInput.value = '';
+            renderTasks();
+        }
+
+        // Función para cambiar el estado de completado
+        function toggleTask(id) {
+            tasks = tasks.map(task => {
+                if (task.id === id) {
+                    return { ...task, completed: !task.completed };
+                }
+                return task;
+            });
+            renderTasks();
+        }
+
+        // Función para eliminar una tarea
+        function deleteTask(id, event) {
+            // Evitar que el clic en el botón de eliminar también active el toggleTask (propagación)
+            event.stopPropagation();
+            
+            tasks = tasks.filter(task => task.id !== id);
+            renderTasks();
+        }
+
+        // Event Listeners
+        taskForm.addEventListener('submit', addTask);
+        
+        // Ocultar error cuando el usuario empieza a escribir de nuevo
+        taskInput.addEventListener('input', () => {
+            errorMsg.classList.add('hidden');
+            taskInput.classList.remove('border-red-400', 'focus:ring-red-500');
+        });
+
+        // Inicializar la aplicación renderizando las tareas por defecto
+        renderTasks();
+    </script>
+</body>
+</html>
