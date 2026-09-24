@@ -26,10 +26,17 @@ stages:
 
 - stage: CD
   displayName: 'Fase CD'
-  dependsOn: CI # Esto asegura que CD solo se ejecute si CI termina con éxito
+  dependsOn: CI
+  condition: succeeded()
   jobs:
-  - job: DeployJob
+  - deployment: DeployWebApp
     displayName: 'Trabajo de Despliegue'
-    steps:
-    - script: echo Aquí van las tareas para desplegar tu proyecto...
-      displayName: 'Paso de despliegue simulado'
+    environment: 'production'
+    pool:
+      vmImage: ubuntu-latest
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: echo "Aqui van las tareas reales para desplegar en Azure App Service..."
+            displayName: 'Paso de despliegue simulado'
