@@ -9,11 +9,27 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+stages:
+- stage: CI
+  displayName: 'Fase CI'
+  jobs:
+  - job: BuildJob
+    displayName: 'Trabajo de Compilación'
+    steps:
+    - script: echo Hello, world!
+      displayName: 'Run a one-line script'
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+    - script: |
+        echo Add other tasks to build, test, and deploy your project.
+        echo See https://aka.ms/yaml
+      displayName: 'Run a multi-line script'
+
+- stage: CD
+  displayName: 'Fase CD'
+  dependsOn: CI # Esto asegura que CD solo se ejecute si CI termina con éxito
+  jobs:
+  - job: DeployJob
+    displayName: 'Trabajo de Despliegue'
+    steps:
+    - script: echo Aquí van las tareas para desplegar tu proyecto...
+      displayName: 'Paso de despliegue simulado'
