@@ -11,7 +11,7 @@ pool:
 
 stages:
 - stage: CI
-  displayName: 'Fase CI: Build'
+  displayName: 'Fase CI'
   jobs:
   - job: BuildJob
     displayName: 'Trabajo de Compilación'
@@ -25,11 +25,18 @@ stages:
       displayName: 'Run a multi-line script'
 
 - stage: CD
-  displayName: 'Fase CD: Deployment'
-  dependsOn: CI # Esto asegura que CD solo se ejecute si CI termina con éxito
+  displayName: 'Fase CD'
+  dependsOn: CI
+  condition: succeeded() # Asegura que solo se ejecute si la fase CI fue exitosa
   jobs:
-  - job: DeployJob
+  - deployment: DeployWebApp
     displayName: 'Trabajo de Despliegue'
-    steps:
-    - script: echo Aquí van las tareas para desplegar tu proyecto...
-      displayName: 'Paso de despliegue simulado'
+    environment: 'production'
+    pool:
+      vmImage: ubuntu-latest
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - script: echo Aquí van las tareas reales para desplegar en Azure App Service...
+            displayName: 'Paso de despliegue simulado'
