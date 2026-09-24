@@ -11,7 +11,7 @@ pool:
 
 stages:
 - stage: CI
-  displayName: 'Fase CI'
+  displayName: 'Fase CI: Build'
   jobs:
   - job: BuildJob
     displayName: 'Trabajo de Compilación'
@@ -25,7 +25,7 @@ stages:
       displayName: 'Run a multi-line script'
 
 - stage: CD
-  displayName: 'Fase CD'
+  displayName: 'Fase CD: Deployment'
   dependsOn: CI # Esto asegura que CD solo se ejecute si CI termina con éxito
   jobs:
   - job: DeployJob
