@@ -27,7 +27,7 @@ stages:
 - stage: CD
   displayName: 'Fase CD'
   dependsOn: CI
-  condition: succeeded() # Asegura que solo se ejecute si la fase CI fue exitosa
+  condition: succeeded()
   jobs:
   - deployment: DeployWebApp
     displayName: 'Trabajo de Despliegue'
@@ -38,5 +38,5 @@ stages:
       runOnce:
         deploy:
           steps:
-          - script: echo Aquí van las tareas reales para desplegar en Azure App Service...
+          - script: echo "Aqui van las tareas reales para desplegar en Azure App Service..."
             displayName: 'Paso de despliegue simulado'
